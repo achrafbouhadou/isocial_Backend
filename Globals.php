@@ -1,7 +1,7 @@
 <?php 
     const HOST = "localhost";
     const USER = "root";
-    const PASSWORD = "";
+    const PASSWORD = "root";
     const DATABASE = "isocialdb";
 
     $host = HOST;

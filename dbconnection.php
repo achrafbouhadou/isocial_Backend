@@ -1,10 +1,10 @@
 <?php 
-    require_once __DIR__."\Globals.php";
+    require_once __DIR__ . "/Globals.php";
     
-    try{
+    try {
         $pdo = new PDO($data, USER, PASSWORD);
-        echo "Connected Seccessfully";
-    }catch(PDOExeption $error){
-        echo $error;
+     
+    } catch (PDOException $error) {
+        echo "Connection failed: " . $error->getMessage();
     }
 ?>
