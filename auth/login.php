@@ -10,3 +10,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once('../dbconnection.php');
 $data = json_decode(file_get_contents('php://input'), true);
+
+$stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email");
+$stmt->bindParam(":email", $data['email']);
+$stmt->execute();
+$result = $stmt->fetch(PDO::FETCH_ASSOC);
+if($result){
+    if (password_verify($result['password'], $data['password'])) {
+        echo json_encode(['success' => true, 'message' => 'User logined successfully']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid password!']);
+    }
+}else{
+    echo json_encode(['success' => false, 'message' => 'Invalid email!']);
+}
