@@ -1,5 +1,5 @@
 <?php
-header('Access-Control-Allow-Origin: http://localhost:3000'); 
+header('Access-Control-Allow-Origin: http://localhost:3000');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Content-Type: application/json');
@@ -8,6 +8,7 @@ require_once('../dbconnection.php');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
+
 $data = json_decode(file_get_contents('php://input'), true);
 
 $errors = [];
@@ -21,7 +22,9 @@ foreach ($requiredFields as $field) {
 }
 
 // Validate email format
+var_dump(filter_var($data['email']));
 if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+
     $errors['email'] = 'Invalid email format';
 }
 
@@ -39,10 +42,10 @@ if (!empty($errors)) {
 
 // test if the email is aleardy set in database 
 $stm = $pdo->prepare("SELECT * From users WHERE email = :email");
-$stm->bindParam(":email",$data['email']);
+$stm->bindParam(":email", $data['email']);
 $stm->execute();
 $result = $stm->fetch(PDO::FETCH_ASSOC);
-if($result){
+if ($result) {
     // Email already exists in the database
     echo json_encode(['success' => false, 'message' => 'Email already exists']);
     exit;
@@ -66,6 +69,3 @@ if ($stmt->execute()) {
 } else {
     echo json_encode(['success' => false, 'message' => 'Error in registration']);
 }
-
-
-    

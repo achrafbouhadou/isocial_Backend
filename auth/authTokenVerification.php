@@ -1,5 +1,6 @@
 <?php
 require_once('../vendor/autoload.php');
+
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 // Always set these headers for OPTIONS requests
@@ -19,15 +20,14 @@ require_once('../Globals.php');
 require_once('./getTokenKey.php');
 
 $jwt = getJwtFromAuthorizationHeader();
-echo getJwtFromAuthorizationHeader(); // eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyaWQiOjgsImlhdCI6MTcwNDc4NjY5MCwiZXhwIjoxNzA0ODAxMDkwfQ.ezIO9B4x-LGGXpq6soec2Xc7K_z3pYFk9ACY8YeM4jU
-if (!$jwt) { 
-    http_response_code(401); 
+if (!$jwt) {
+    http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'No token provided']);
     exit;
 }
 
 try {
-    $decoded = JWT::decode($jwt, new Key(JWT_SECRET_KEY , 'HS256'));
+    $decoded = JWT::decode($jwt, new Key(JWT_SECRET_KEY, 'HS256'));
     echo json_encode(['success' => true, 'message' => 'Token is valid']);
 } catch (Firebase\JWT\ExpiredException $e) {
     http_response_code(401); // Unauthorized
