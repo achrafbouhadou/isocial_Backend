@@ -1,5 +1,6 @@
-<?php 
-function getJwtFromAuthorizationHeader() {
+<?php
+function getJwtFromAuthorizationHeader()
+{
     $headers = null;
     if (isset($_SERVER['Authorization'])) {
         $headers = trim($_SERVER["Authorization"]);

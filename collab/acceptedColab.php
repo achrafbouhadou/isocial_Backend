@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 $jwt = getJwtFromAuthorizationHeader();
+
 if (!$jwt) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'No token provided']);
@@ -38,37 +39,17 @@ try {
 }
 
 $data = json_decode(file_get_contents('php://input'), true);
+$userId = $data['userid'];
+$postId = $data['idpost'];
+$sql = "UPDATE postes SET id_user_travail = :id_user_travail WHERE id = :id_post";
 
-$errors = [];
-// Check if all fields are present and not empty
-$requiredFields = ['title', 'description', 'type', 'filed', 'end_date'];
-foreach ($requiredFields as $field) {
-    if (empty($data[$field])) {
-        $errors[$field] = $field . ' is required';
-    }
-}
+$stm = $pdo->prepare($sql);
+$stm->bindParam(":id_user_travail", $userId);
+$stm->bindParam(":id_post", $postId);
+$stm->execute();
 
-
-// If there are any errors, send them back to the client
-if (!empty($errors)) {
-    echo json_encode(['success' => false, 'errors' => $errors]);
-    exit;
-}
-
-$stmt = $pdo->prepare("INSERT INTO postes (id_field, id_user_request, title, description, type, end_date) VALUES (:id_field, :id_user_request, :title, :description, :type, :end_date)");
-
-$idField = (int)$data['filed'];
-
-$userid = (int)$decoded->userid;
-$stmt->bindParam(":id_field", $idField);
-$stmt->bindParam(":id_user_request", $userid);
-$stmt->bindParam(":title", $data['title']);
-$stmt->bindParam(":description", $data['description']);
-$stmt->bindParam(":type", $data['type']);
-$stmt->bindParam(":end_date", $data['end_date']);
-
-if ($stmt->execute()) {
-    echo json_encode(['success' => true, 'message' => 'poste added successfully']);
+if ($stm->rowCount() > 0) {
+    echo json_encode(['success' => true, 'message' => 'the collab accepted succfly']);
 } else {
-    echo json_encode(['success' => false, 'message' => 'Error in adding postes: ' . $stmt->errorInfo()[2]]);
+    echo json_encode(['success' => false, 'message' => 'somthing whent wrong']);
 }

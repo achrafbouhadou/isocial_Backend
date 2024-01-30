@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 $jwt = getJwtFromAuthorizationHeader();
+
 if (!$jwt) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'No token provided']);
@@ -37,38 +38,28 @@ try {
     echo json_encode(['success' => false, 'message' => 'An error occurred while validating the token']);
 }
 
-$data = json_decode(file_get_contents('php://input'), true);
+$userid = (int)$decoded->userid;
 
-$errors = [];
-// Check if all fields are present and not empty
-$requiredFields = ['title', 'description', 'type', 'filed', 'end_date'];
-foreach ($requiredFields as $field) {
-    if (empty($data[$field])) {
-        $errors[$field] = $field . ' is required';
-    }
-}
-
-
-// If there are any errors, send them back to the client
-if (!empty($errors)) {
-    echo json_encode(['success' => false, 'errors' => $errors]);
+// get user filed id 
+$stm = $pdo->prepare("SELECT * From users WHERE id = :id");
+$stm->bindParam(":id", $userid);
+$stm->execute();
+$result = $stm->fetch(PDO::FETCH_ASSOC);
+if ($result) {
+    $filedid = (int)$result['id_filed'];
+} else {
+    echo json_encode(['success' => false, 'message' => 'invalide user id ']);
     exit;
 }
 
-$stmt = $pdo->prepare("INSERT INTO postes (id_field, id_user_request, title, description, type, end_date) VALUES (:id_field, :id_user_request, :title, :description, :type, :end_date)");
+// get all poste that request the user field 
+$stm = $pdo->prepare("SELECT * From postes WHERE id_field = :id_field");
 
-$idField = (int)$data['filed'];
-
-$userid = (int)$decoded->userid;
-$stmt->bindParam(":id_field", $idField);
-$stmt->bindParam(":id_user_request", $userid);
-$stmt->bindParam(":title", $data['title']);
-$stmt->bindParam(":description", $data['description']);
-$stmt->bindParam(":type", $data['type']);
-$stmt->bindParam(":end_date", $data['end_date']);
-
-if ($stmt->execute()) {
-    echo json_encode(['success' => true, 'message' => 'poste added successfully']);
+$stm->bindParam(":id_field", $filedid);
+$stm->execute();
+if ($stm->execute()) {
+    $posts = $stm->fetchAll(PDO::FETCH_ASSOC);
+    echo json_encode(['posts' => $posts]);
 } else {
     echo json_encode(['success' => false, 'message' => 'Error in adding postes: ' . $stmt->errorInfo()[2]]);
 }

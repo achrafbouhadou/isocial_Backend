@@ -36,39 +36,11 @@ try {
     error_log($e->getMessage());
     echo json_encode(['success' => false, 'message' => 'An error occurred while validating the token']);
 }
-
-$data = json_decode(file_get_contents('php://input'), true);
-
-$errors = [];
-// Check if all fields are present and not empty
-$requiredFields = ['title', 'description', 'type', 'filed', 'end_date'];
-foreach ($requiredFields as $field) {
-    if (empty($data[$field])) {
-        $errors[$field] = $field . ' is required';
-    }
-}
-
-
-// If there are any errors, send them back to the client
-if (!empty($errors)) {
-    echo json_encode(['success' => false, 'errors' => $errors]);
-    exit;
-}
-
-$stmt = $pdo->prepare("INSERT INTO postes (id_field, id_user_request, title, description, type, end_date) VALUES (:id_field, :id_user_request, :title, :description, :type, :end_date)");
-
-$idField = (int)$data['filed'];
-
-$userid = (int)$decoded->userid;
-$stmt->bindParam(":id_field", $idField);
-$stmt->bindParam(":id_user_request", $userid);
-$stmt->bindParam(":title", $data['title']);
-$stmt->bindParam(":description", $data['description']);
-$stmt->bindParam(":type", $data['type']);
-$stmt->bindParam(":end_date", $data['end_date']);
-
-if ($stmt->execute()) {
-    echo json_encode(['success' => true, 'message' => 'poste added successfully']);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Error in adding postes: ' . $stmt->errorInfo()[2]]);
+$userId = $_GET['userId'];
+$stmt = $pdo->prepare("SELECT * FROM users WHERE id = :id");
+$stmt->bindParam(":id", $userId);
+$stmt->execute();
+$result = $stmt->fetch(PDO::FETCH_ASSOC);
+if ($result) {
+    echo json_encode(['user' => $result]);
 }

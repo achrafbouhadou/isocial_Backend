@@ -36,39 +36,31 @@ try {
     error_log($e->getMessage());
     echo json_encode(['success' => false, 'message' => 'An error occurred while validating the token']);
 }
+$postId = (int)$_GET['postId']; // 16
+$userid = (int)$decoded->userid; // 16
 
-$data = json_decode(file_get_contents('php://input'), true);
+$stm = $pdo->prepare("SELECT * FROM collabs WHERE id_user_ask = :id_user_ask AND id_post = :id_post ");
+$stm->bindParam(":id_user_ask", $userid); // Corrected binding
+$stm->bindParam(":id_post", $postId); // Corrected binding
 
-$errors = [];
-// Check if all fields are present and not empty
-$requiredFields = ['title', 'description', 'type', 'filed', 'end_date'];
-foreach ($requiredFields as $field) {
-    if (empty($data[$field])) {
-        $errors[$field] = $field . ' is required';
+if ($stm->execute()) {
+    $result = $stm->fetch();
+    if ($result) {
+        echo json_encode(['success' => false, 'message' => 'You have already asked for collab']);
+        exit; // Exit after sending response
     }
+} else {
+    echo json_encode(['success' => false, 'message' => 'Error in selecting collabs: ' . $stm->errorInfo()[2]]);
+    exit; // Exit on error
 }
 
+$stmt = $pdo->prepare("INSERT INTO collabs (id_user_ask, id_post) VALUES (:id_user_ask, :id_post)");
 
-// If there are any errors, send them back to the client
-if (!empty($errors)) {
-    echo json_encode(['success' => false, 'errors' => $errors]);
-    exit;
-}
-
-$stmt = $pdo->prepare("INSERT INTO postes (id_field, id_user_request, title, description, type, end_date) VALUES (:id_field, :id_user_request, :title, :description, :type, :end_date)");
-
-$idField = (int)$data['filed'];
-
-$userid = (int)$decoded->userid;
-$stmt->bindParam(":id_field", $idField);
-$stmt->bindParam(":id_user_request", $userid);
-$stmt->bindParam(":title", $data['title']);
-$stmt->bindParam(":description", $data['description']);
-$stmt->bindParam(":type", $data['type']);
-$stmt->bindParam(":end_date", $data['end_date']);
+$stmt->bindParam(":id_user_ask", $userid); // Corrected binding
+$stmt->bindParam(":id_post", $postId); // Corrected binding
 
 if ($stmt->execute()) {
-    echo json_encode(['success' => true, 'message' => 'poste added successfully']);
+    echo json_encode(['success' => true, 'message' => 'Collab added successfully']);
 } else {
-    echo json_encode(['success' => false, 'message' => 'Error in adding postes: ' . $stmt->errorInfo()[2]]);
+    echo json_encode(['success' => false, 'message' => 'Error in adding collab: ' . $stmt->errorInfo()[2]]);
 }
