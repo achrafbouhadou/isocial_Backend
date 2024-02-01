@@ -21,12 +21,7 @@ foreach ($requiredFields as $field) {
     }
 }
 
-// Validate email format
-var_dump(filter_var($data['email']));
-if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
 
-    $errors['email'] = 'Invalid email format';
-}
 
 // Check if passwords match
 if ($data['password'] !== $data['rePassword']) {

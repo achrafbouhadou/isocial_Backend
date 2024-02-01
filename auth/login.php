@@ -33,7 +33,7 @@ if ($result) {
         );
 
         $jwt = JWT::encode($payload, JWT_SECRET_KEY,  'HS256');
-        echo json_encode(['success' => true, 'message' => 'User logged in successfully', 'token' => $jwt]);
+        echo json_encode(['success' => true, 'message' => 'User logged in successfully', 'token' => $jwt, 'userid' => $result['id']]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Invalid password!']);
     }
